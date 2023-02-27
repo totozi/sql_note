@@ -117,5 +117,28 @@ SELECT *
  WHERE NUM < 5
 ;
 
+SELECT ENAME, DNAME, SAL
+  FROM EMP  A
+     , DEPT B
+ WHERE A.DEPTNO = B.DEPTNO
+   AND A.EMPNO IN ( SELECT EMPNO
+                       FROM EMP
+                      WHERE SAL > 2000
+                  )
+;
+
+SELECT *
+  FROM EMP
+ WHERE DEPTNO <= ALL(20, 30)
+ ; -- 20,30 보다 작거나 같은 것
+
+SELECT A.*
+  FROM EMP A
+ WHERE EXISTS ( 
+               SELECT 1 
+                 FROM EMP 
+                WHERE SAL > 2000
+                ) -- TRUE OR FALSE 반환
+;
                  
             
