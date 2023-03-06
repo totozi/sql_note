@@ -140,5 +140,62 @@ SELECT A.*
                 WHERE SAL > 2000
                 ) -- TRUE OR FALSE 반환
 ;
-                 
-            
+
+
+-- 스칼라 subquery : 반드시 한 행과 한 컬럼만 반환하는 서브쿼리                 
+SELECT ENAME AS 이름
+     , SAL   AS 급여
+     , (SELECT AVG(SAL)
+          FROM EMP
+        ) AS 평균급여
+  FROM EMP
+;
+
+-- correlated subquery : 서브쿼리 내에서 메인 쿼리 내의 컬럼을 사용
+SELECT A.*
+  FROM EMP A
+ WHERE A.DEPTNO = (
+                   SELECT DEPTNO 
+                     FROM DEPT B
+                    WHERE B.DEPTNO = A.DEPTNO
+                    )
+
+;
+
+-- ROLLUP 한 개인 경우
+SELECT DECODE(DEPTNO, NULL, '전체합계', DEPTNO)
+      , SUM(SAL)
+  FROM EMP
+ GROUP BY ROLLUP(DEPTNO)
+;
+
+-- ROLLUP 두 개인 경우
+SELECT DECODE(DEPTNO, NULL, '전체합계', DEPTNO)
+     , DECODE(JOB,    NULL, '부서합계', JOB   )
+     , SUM(SAL)
+  FROM EMP
+ GROUP BY ROLLUP(DEPTNO, JOB)
+;
+
+-- GROUPING : 합계값 구분을 위해 만들어진 함수
+
+SELECT DEPTNO
+     , GROUPING(DEPTNO)
+     , JOB
+     , GROUPING(JOB)
+     , SUM(SAL)
+  FROM EMP
+ GROUP BY ROLLUP(DEPTNO, JOB)
+ ;
+ 
+-- GROUPING SETS
+SELECT DEPTNO, JOB, SUM(SAL)
+  FROM EMP
+ GROUP BY GROUPING SETS(DEPTNO, JOB);
+ -- 서로 관계가 없어 개별적으로 조회된다.
+ 
+-- CUBE : 조합할 수 있는 경우의 수가 모두 조합되어 집계 출력
+SELECT DEPTNO, JOB, SUM(SAL)
+  FROM EMP
+ GROUP BY CUBE(DEPTNO, JOB)
+;
