@@ -199,3 +199,98 @@ SELECT DEPTNO, JOB, SUM(SAL)
   FROM EMP
  GROUP BY CUBE(DEPTNO, JOB)
 ;
+
+-- Window Function : 행과 행 간의 관계를 정의하기 위해 제공되는 함수
+
+SELECT EMPNO
+     , ENAME
+     , SAL
+     , SUM(SAL) OVER (ORDER BY SAL
+                      ROWS BETWEEN UNBOUNDED PRECEDING -- 첫번째 행을 의미 
+                       AND UNBOUNDED FOLLOWING) -- 마지막 행을 의미
+                      AS TOTSAL
+  FROM EMP
+;
+
+SELECT EMPNO
+     , ENAME
+     , SAL
+     , SUM(SAL) OVER (ORDER BY SAL
+                      ROWS BETWEEN UNBOUNDED PRECEDING -- 첫번째 행을 의미 
+                       AND CURRENT ROW) -- 현재 행을 의미
+                      AS TOTSAL
+  FROM EMP
+;
+
+-- Rank Function
+SELECT ENAME
+     , JOB
+     , SAL
+     , RANK() OVER (ORDER BY SAL DESC) ALL_RANK
+     , RANK() OVER (PARTITION BY JOB ORDER BY SAL DESC) AS JOB_RANK
+  FROM EMP
+;
+
+-- DENSE RANK 동일한 순위를 하나의 건수로
+SELECT ENAME
+     , SAL
+     , RANK() OVER (ORDER BY SAL DESC) ALL_RANK
+     , DENSE_RANK() OVER (ORDER BY SAL DESC) DENSE_RANK
+  FROM EMP
+;
+
+-- ROW_NUMBER 동일한 순위에 고유의 순위 부여
+SELECT ENAME
+     , SAL
+     , RANK() OVER (ORDER BY SAL DESC) ALL_RANK
+     , ROW_NUMBER() OVER (ORDER BY SAL DESC) ROW_NUM
+  FROM EMP
+;
+
+-- 집계 함수
+-- SUM, AVG, COUNT, MAX, MIN
+SELECT EMPNO
+     , ENAME
+     , SAL
+     , MGR
+     , SUM(SAL) OVER (PARTITION BY MGR) SUM_MGR
+  FROM EMP
+;
+
+-- 행 순서 관련 함수
+-- FIRST_VALUE : 첫번째 행
+-- LAST_VALUE  : 마지막 행
+SELECT DEPTNO
+     , ENAME
+     , SAL
+     , FIRST_VALUE(ENAME) OVER (PARTITION BY DEPTNO 
+       ORDER BY SAL DESC ROWS UNBOUNDED PRECEDING) AS DEPT_A
+     , LAST_VALUE(ENAME) OVER (PARTITION BY DEPTNO 
+       ORDER BY SAL DESC ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING) AS DEPT_B
+  FROM EMP
+;
+
+-- LAG : 이전 값
+-- LEAD : 지정된 위치의 행 가지고 옴
+SELECT DEPTNO
+     , ENAME
+     , SAL
+     , LAG(SAL) OVER(ORDER BY SAL DESC) AS PRE_SAL
+     , LEAD(SAL, 2) OVER(ORDER BY SAL DESC) AS PRE2_SAL
+  FROM EMP
+;
+
+-- 비율관련
+-- CUME_DIST : 누적 백분율
+-- PERCENT_RANK : 순서별 백분율
+-- NTILE : 전체 건수 N등분
+-- RATIO_TO_REPOERT : SUM에 대한행 별 컬럼값의 백분율
+
+SELECT DEPTNO
+     , ENAME
+     , SAL
+     , PERCENT_RANK() OVER(PARTITION BY DEPTNO ORDER BY SAL DESC) AS PERCENT_SAL
+     , NTILE(4) OVER(ORDER BY SAL DESC) AS N_TILE
+     , 
+  FROM EMP
+;
